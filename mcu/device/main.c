@@ -116,37 +116,66 @@ void Read_Force(void) {
 
 void Read_Resistor(void) {
 	while (1) {
-		osCooperative_Wait(&Sema_RES);
+		int8_t count = 0;
 		float value = 0;
-		while (value == 0) {
-			value = ADC_Range6_Resistance(3, pga_2V);
-			if (value > 300000) {
-				device.current_resistor = (uint32_t)((value * 100) / 1 );
-				break;
-			}
-			value = ADC_Range5_Resistance(3, pga_2V);
-			if (value > 20000) {
-				device.current_resistor = (uint32_t)((value * 100) / 1 );
-				break;
-			}
-			value = ADC_Range4_Resistance(3, pga_2V);
-			if (value > 2000) {
-				device.current_resistor = (uint32_t)((value * 100) / 1 );
-				break;
-			}
-			value = ADC_Range3_Resistance(3, pga_2V);
-			if (value > 200) {
-				device.current_resistor = (uint32_t)((value * 100) / 1 );
-				break;
-			}
-			value = ADC_Range2_Resistance(3, pga_2V);
-			if (value > 20) {
-				device.current_resistor = (uint32_t)((value * 100) / 1 );
-				break;
-			}
-			value = ADC_Range1_Resistance(3, pga_2V);
-			device.current_resistor = (uint32_t)((value * 100) / 1 );
-			break;
+		osCooperative_Wait(&Sema_RES);
+		switch (count) {
+			case 0:
+				value = ADC_Range7_Resistance(2);
+				count++;
+				if (value > 2000000) {
+					device.current_resistor = (uint32_t)((value * 100) / 1 );
+					count = 0;
+					break;
+				}
+			case 1:
+				value = ADC_Range6_Resistance(2);
+				count++;
+				if (value > 200000) {
+					device.current_resistor = (uint32_t)((value * 100) / 1 );
+					count = 0;
+					break;
+				}
+			case 2:
+				value = ADC_Range5_Resistance(3, pga_2V);
+				count++;
+				if (value > 20000) {
+					device.current_resistor = (uint32_t)((value * 100) / 1 );
+					count = 0;
+					break;
+				}
+			case 3:
+				value = ADC_Range4_Resistance(3, pga_2V);
+				count++;
+				if (value > 2000) {
+					device.current_resistor = (uint32_t)((value * 100) / 1 );
+					count = 0;
+					break;
+				}
+			case 4:
+				value = ADC_Range3_Resistance(3, pga_2V);
+				count++;
+				if (value > 200) {
+					device.current_resistor = (uint32_t)((value * 100) / 1 );
+					count = 0;
+					break;
+				}
+			case 5:
+				value = ADC_Range2_Resistance(3, pga_2V);
+				count++;
+				if (value > 20) {
+					device.current_resistor = (uint32_t)((value * 100) / 1 );
+					count = 0;
+					break;
+				}
+			case 6:
+				value = ADC_Range1_Resistance(3, pga_2V);
+				count++;
+				if (value > 0.4) {
+					device.current_resistor = (uint32_t)((value * 100) / 1 );
+					count = 0;
+					break;
+				}
 		}
 		osThreadYield();
 	}
@@ -273,7 +302,6 @@ int main (void) {
 			osSemaphore_Init(&Sema_COM   , 0);
 			osSemaphore_Init(&Sema_SD    , 0);
 			osSemaphore_Init(&Sema_RES   , 0);
-			
 			
 			osKernelInit();
 			osKernelAdd1Thread(*(Receive_Form_VCU));
